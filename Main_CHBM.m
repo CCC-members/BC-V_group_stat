@@ -7,16 +7,26 @@ addpath('external');
 addpath('functions');
 addpath('templates');
 addpath('make_reports');
-disp("-->> Starting process");
 
-output_path = fullfile(pwd,'Report');
-load('mycolormap_brain_basic_conn.mat');
-disp("--------->> Processing CHBM dataset <<---------");
-disp("-------------------------------------------------");
+properties = jsondecode(fileread(fullfile('app','properties.json')));
+
+%% Printing data information
+disp(strcat("-->> Name:",properties.generals.name));
+disp(strcat("-->> Version:",properties.generals.version));
+disp(strcat("-->> Version date:",properties.generals.version_date));
+disp("=================================================================");
+
+
+root_path = properties.Input_path;
+output_path = properties.Output_path;
+load(properties.colormap);
+disp("-->> Starting process");
+disp("------------------>> Processing CHBM dataset <<-----------------");
+disp("----------------------------------------------------------------");
 disp("-->> Finding completed files");
 root_pathCtrl = "Z:\data3_260T\share_space\jcclab-users\Ariosky\BC-V_Output\CHBM_plg_good_segments";
 subjects = dir(fullfile(root_pathCtrl,'**','BC_V_info.mat'));
-disp("-------------------------------------------------");
+disp("----------------------------------------------------------------");
 
 % Creating a report
 report_name = 'CHBM dataset_qc';
@@ -39,8 +49,20 @@ line_5 = 'Apply clean_rawdata() to reject bad channels and correct continuous da
 line_6 = 'Interpolate all the removed channels.';
 f_report('Info',{line_1,line_2,line_3,line_4,line_5,line_6}); % multiline information cell array
 
-activ3DCtrl = zeros(8002,6,10);
-for i=1:10
+% Checking firt subject for create the tensors
+subject                 = subjects(1);
+load(fullfile(subject.folder,subject.name));
+sensor_level            = BC_V_info.sensor_level;
+sensor_file             = fullfile(subject.folder,sensor_level(1).Ref_path,sensor_level(1).Name);
+load(sensor_file, 'Svv');
+activ_level             = BC_V_info.activation_level; 
+activ_file              = fullfile(subject.folder,activ_level(1).Ref_path,activ_level(1).Name);        
+load(activ_file,"J_FSAve");
+
+
+sensor3DCtrl = cell(length(subject),length(sensor_level));
+activ3DCtrl = zeros(size(J_FSAve,1),length(activ_level),length(subject));
+for i=1:length(subject)
     subject                 = subjects(i);
     load(fullfile(subject.folder,subject.name));
     subID                   = BC_V_info.subjectID;
@@ -83,38 +105,25 @@ for i=1:10
         'view_orient',{[],[],[0,0],[180,0],[],[],[0,0],[180,0]});
     f_report('Snapshot', fig_out, fig_name, [] , [200,200,875,350]);
     close(fig_1_delta,fig_2_delta,fig_3_delta,fig_4_delta,fig_1_alpha,fig_2_alpha,fig_3_alpha,fig_4_alpha,fig_out);
-    
-    
+        
     sensor_level            = BC_V_info.sensor_level;
-    activ_level             = BC_V_info.activation_level;
-    
-    for j=1:length(activ_level)
-        activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);       
-        eval([activ_level(j).Band,'_J_FSAve' '= load(activ_file,"J_FSAve");']);
-         activ3DCtrl(:,j,i) = log(1 + sqrt(abs(delta_J_FSAve.J_FSAve)/max(abs(delta_J_FSAve.J_FSAve(:)))));
+    for j=1:length(sensor_level)
+        sensor_file = fullfile(subject.folder,sensor_level(j).Ref_path,sensor_level(j).Name);        
+        load(sensor_file, 'Svv');
+        sensor3DCtrl(i,j) = {Svv};
     end
     
-    delta_J_FSAve           = load(fullfile(subject.folder,activ_level.sssblpp.delta.ref_path,activ_level.sssblpp.delta.name),'J_FSAve');
-    theta_J_FSAve           = load(fullfile(subject.folder,activ_level.sssblpp.theta.ref_path,activ_level.sssblpp.theta.name),'J_FSAve');
-    alpha_J_FSAve           = load(fullfile(subject.folder,activ_level.sssblpp.alpha.ref_path,activ_level.sssblpp.alpha.name),'J_FSAve');
-    beta_J_FSAve            = load(fullfile(subject.folder,activ_level.sssblpp.beta.ref_path,activ_level.sssblpp.beta.name),'J_FSAve');
-    gamma1_J_FSAve          = load(fullfile(subject.folder,activ_level.sssblpp.gamma1.ref_path,activ_level.sssblpp.gamma1.name),'J_FSAve');
-    gamma2_J_FSAve          = load(fullfile(subject.folder,activ_level.sssblpp.gamma2.ref_path,activ_level.sssblpp.gamma2.name),'J_FSAve');
+    activ_level             = BC_V_info.activation_level;    
+    for j=1:length(activ_level)
+        activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);        
+        load(activ_file,"J_FSAve");
+        activ3DCtrl(:,j,i) = abs(log(1 + sqrt(J_FSAve/max(J_FSAve(:)))));
+    end
     
-    delta_J_FSAve.J_FSAve   = log(1 + sqrt(abs(delta_J_FSAve.J_FSAve)/max(abs(delta_J_FSAve.J_FSAve(:)))));
-    theta_J_FSAve.J_FSAve   = log(1 + sqrt(abs(theta_J_FSAve.J_FSAve)/max(abs(theta_J_FSAve.J_FSAve(:)))));
-    alpha_J_FSAve.J_FSAve   = log(1 + sqrt(abs(alpha_J_FSAve.J_FSAve)/max(abs(alpha_J_FSAve.J_FSAve(:)))));
-    beta_J_FSAve.J_FSAve    = log(1 + sqrt(abs(beta_J_FSAve.J_FSAve)/max(abs(beta_J_FSAve.J_FSAve(:)))));
-    gamma1_J_FSAve.J_FSAve  = log(1 + sqrt(abs(gamma1_J_FSAve.J_FSAve)/max(abs(gamma1_J_FSAve.J_FSAve(:)))));
-    gamma2_J_FSAve.J_FSAve  = log(1 + sqrt(abs(gamma2_J_FSAve.J_FSAve)/max(abs(gamma2_J_FSAve.J_FSAve(:)))));
-    
-    activ3DCtrl(:,:,i)      = [delta_J_FSAve.J_FSAve, theta_J_FSAve.J_FSAve, alpha_J_FSAve.J_FSAve, beta_J_FSAve.J_FSAve, gamma1_J_FSAve.J_FSAve, gamma2_J_FSAve.J_FSAve];
-    
-    conn_level = BC_V_info.connectivity_level;
-    
+%     conn_level = BC_V_info.connectivity_level;    
     
 end
-% JnormControl = sum(activ3DCtrl,3)/length(subjects);
+% JnormControl = sum(activ3DCtrl,3)/10;
 % 
 % JnormBandMeanDeltaFig = figure;
 % patch('Faces',Faces,'Vertices',Vertices,'FaceVertexCData',SulciMap*0.06+JnormControl(:,1),'FaceColor','interp','EdgeColor','none','FaceAlpha',.99);
