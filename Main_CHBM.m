@@ -135,7 +135,7 @@ end
 %% remove subject scale 
 activ3D_g1t               = log(activ3D_g1);
 activ3D_g1t               = activ3D_g1t - mean(activ3D_g1t,[1 2]);
-plot_age(activ3D_g1t,age_g1,Sc)
+fig_scattergram           = plot_age(activ3D_g1t,age_g1,Sc);
 
 activ3D_g2t               = log(activ3D_g2);
 activ3D_g3t               = log(activ3D_g3);
@@ -172,6 +172,15 @@ f_report('New');
 f_report('Title','Group difference normativeVScontrol, controlVScovid');
 % Add a title to the report
 f_report('Header','Cortical topography');
+% Add a info to the report
+f_report('Index','Linear trend of the data with age'); % a line information
+bands = {'delta','theta','alpha','beta','gamma'};
+for band = 1:length(bands)
+    fig_out  = fig_scattergram{band};
+    fig_name = ['age-scattergram ',bands{band}]; 
+    f_report('Snapshot', fig_out, fig_name, [] , [200,200,875,350]);
+    close(fig_out);
+end
 % Add topic to the report
 f_report('Index','Student T-test of the groups');
 % Add a info to the report
@@ -188,7 +197,6 @@ line_8 = 'obtain Tstudent(data_g1,data_g2) between normative and control data';
 line_9 = 'obtain Tstudent(data_g2,data_g3) between control and covid data';
 f_report('Info',{line_1,line_2,line_3,line_4,line_5,line_6,line_7,line_8,line_9}); % multiline information cell array
 %%
-bands = {'delta','theta','alpha','beta','gamma'};
 for band = 1:length(bands)
     % diff g1_g2
     figure_diff_g1_g2 = figure;
