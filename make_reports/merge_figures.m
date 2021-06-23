@@ -70,6 +70,11 @@ for i=1:rows
         else
             axis on;
         end
+        if(exist('colorbar','var'))
+            if(isequal(colorbars{p},'on'));axis on; else;axis off;end
+        else
+            colorbar;
+        end
         axis tight;
         if(isempty(figures_path{p}));continue;end
         handle=hgload(figures_path{p});
