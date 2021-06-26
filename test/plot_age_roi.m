@@ -1,4 +1,8 @@
+<<<<<<< HEAD:test/plot_age_roi.m
 function fig_scattergram = plot_age_roi(data,age,Sc)
+=======
+function fig_scattergram = plot_age(data,age,Sc)
+>>>>>>> 998bebe8d21a1b5badcd5febeaa1a6db8a96f74c:test/plot_age.m
 Scouts                = Sc.Atlas(Sc.iAtlas).Scouts;
 bands                 = {'delta','theta','alpha','beta','gamma'};
 data_roi              = zeros(length(Scouts),size(data,3));
