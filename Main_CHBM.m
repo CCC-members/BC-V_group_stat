@@ -20,13 +20,13 @@ disp("=================================================================");
 root_path_g1 = 'Z:\data3_260T\share_space\jcclab-users\Ariosky\BC-V_Output\CHBM_Template';
 root_path_g2 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Controls_manual_&_auto';
 root_path_g3 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Pathol_manual_&_auto';
-output_path  = 'D:\Data\CHBM\BC-V_group_stat';
+output_path  = 'Output';
+load(properties.general_params.colormap);
 
 %Getting subject surface
 surf        = load(fullfile('Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Structure\Controls_manual_&_auto\CU COVID 003\surf\surf.mat'));
 Sc          = surf.Sc(surf.iCortex);
 
-load(properties.colormap);
 disp("-->> Starting process");
 disp("------------------>> Processing CHBM normative dataset <<-----------------");
 disp("----------------------------------------------------------------");
@@ -38,6 +38,8 @@ disp("-->> Finding completed files");
 % Checking firt subject for create the tensors
 subjects_g1 = dir(fullfile(root_path_g1,'**','BC_V_info.mat'));
 disp("----------------------------------------------------------------");
+good_cases              = dir("Z:\data3_260T\data\CCLAB_DATASETS\CHBM\CHBM_Pedrito\CNEURO_datos\EEG_name_corrected");
+good_cases(ismember({good_cases.name},{'..','.'})) = [];
 info_g1                 = load('CHBM_info');
 subject                 = subjects_g1(1);
 load(fullfile(subject.folder,subject.name));
@@ -51,15 +53,17 @@ for i=1:length(subjects_g1)
     subject                 = subjects_g1(i);
     load(fullfile(subject.folder,subject.name));
     subID                   = BC_V_info.subjectID;
-    disp(strcat("-->> Processing subject: ",subID," Iter: ", num2str(i)));
-    activ_level             = BC_V_info.activation_level;   
-    age_g1(i)               = info_g1.data_info(contains({info_g1.data_info.SubID},subID)).Age;
-    for j=1:length(activ_level)
-        activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
-        load(activ_file,"J");
-        activ3D_g1(:,j,count_g1) = J;
+    if(find(ismember({good_cases.name},strcat(subID,'.mat')),1))        
+        disp(strcat("-->> Processing subject: ",subID," Iter: ", num2str(i)));
+        activ_level             = BC_V_info.activation_level;
+        age_g1(count_g1)               = info_g1.data_info(contains({info_g1.data_info.SubID},subID)).Age;
+        for j=1:length(activ_level)
+            activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
+            load(activ_file,"J");
+            activ3D_g1(:,j,count_g1) = J;
+        end
+        count_g1 = count_g1 + 1;
     end
-    count_g1 = count_g1 + 1;
 end
 
 %%
@@ -79,6 +83,7 @@ activ_file              = fullfile(subject.folder,activ_level(1).Ref_path,activ_
 load(activ_file,"J");
 activ3D_g2              = zeros(size(J,1),length(activ_level),length(subjects_g2));
 age_g2                  = zeros(length(subjects_g2),1);
+
 count_g2                = 1;
 for i=1:length(subjects_g2)
     subject                 = subjects_g2(i);
@@ -128,19 +133,19 @@ for i=1:length(subjects_g3)
     count_g3 = count_g3 + 1;
 end
 
-
 %%
 %% Group comparison
 %%
 %% remove subject scale 
 activ3D_g1t               = log(activ3D_g1);
-activ3D_g1t               = activ3D_g1t - mean(activ3D_g1t,[1 2]);
-fig_scattergram           = plot_age(activ3D_g1t,age_g1,Sc);
-
 activ3D_g2t               = log(activ3D_g2);
 activ3D_g3t               = log(activ3D_g3);
+fig_scattergram           = plot_age(activ3D_g1t,age_g1,Sc);
+activ3D_g1t               = activ3D_g1t - mean(activ3D_g1t,[1 2]);
 activ3D_g2t               = activ3D_g2t - mean(activ3D_g2t,[1 2]);
 activ3D_g3t               = activ3D_g3t - mean(activ3D_g3t,[1 2]);
+
+
 
 %% linea regression
 [activ3D_g1t,activ3D_g2t,activ3D_g3t] = linear_regression(activ3D_g1t,age_g1,activ3D_g2t,age_g2,activ3D_g3t,age_g3,Sc,cmap);
