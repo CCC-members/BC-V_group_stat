@@ -10,15 +10,15 @@ for band = 1:length(bands)
     [val,id_data_sens]                = sort(data_sens_median);
     data_sens                         = data_sens(id_data_sens,:);
     fig = figure;
-    count_roi = 1;
-    for roi = 1:length(Scouts)
-        scatter(age,squeeze(data_sens(roi,:)));
+    count_sens = 1;
+    for sens = 1:size(data,1)
+        scatter(age,squeeze(data_sens(sens,:)));
         hold on
-        Y                             = squeeze(data_sens(roi,:))';
-        B(:,roi)                      = X\Y;
-        Y                             = squeeze(B(1,roi))*X(:,1) + squeeze(B(2,roi))*X(:,2);
+        Y                             = squeeze(data_sens(sens,:))';
+        B(:,sens)                      = X\Y;
+        Y                             = squeeze(B(1,sens))*X(:,1) + squeeze(B(2,sens))*X(:,2);
         plot(age,Y)
-        count_roi = count_roi + 1;
+        count_sens = count_sens + 1;
     end
     xlabel('age');
     ylabel('roi-act');
