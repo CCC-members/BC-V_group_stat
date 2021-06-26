@@ -138,16 +138,10 @@ end
 %%
 %% remove subject scale 
 activ3D_g1t               = log(activ3D_g1);
-<<<<<<< HEAD:Main_CHBM_act_level.m
 activ3D_g1t               = activ3D_g1t - mean(activ3D_g1t,[1 2]);
 fig_scattergram           = plot_age_roi(activ3D_g1t,age_g1,Sc);
-
-=======
->>>>>>> 998bebe8d21a1b5badcd5febeaa1a6db8a96f74c:Main_CHBM.m
 activ3D_g2t               = log(activ3D_g2);
 activ3D_g3t               = log(activ3D_g3);
-fig_scattergram           = plot_age(activ3D_g1t,age_g1,Sc);
-activ3D_g1t               = activ3D_g1t - mean(activ3D_g1t,[1 2]);
 activ3D_g2t               = activ3D_g2t - mean(activ3D_g2t,[1 2]);
 activ3D_g3t               = activ3D_g3t - mean(activ3D_g3t,[1 2]);
 

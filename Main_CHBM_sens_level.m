@@ -22,21 +22,31 @@ root_path_g2 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Co
 root_path_g3 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Pathol_manual_&_auto';
 output_path  = 'D:\Data\CHBM\BC-V_group_stat';
 
-%Getting subject surface
-BC_V_info           = load(fullfile('Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Controls_manual_&_auto\CU COVID 173\BC_V_info.mat'));
-chann_properties    = BC_V_info.BC_V_info.properties;
-load(chann_properties.colormap);
-cfg.marker          = '';
-cfg.layout          = chann_properties.sensor_params.fieldtrip.layout.value;
-cfg.channel         = 'eeg';
-cfg.markersymbol    = '.';
-cfg.colormap        = cmap_a;
-cfg.markersize      = 3;
-cfg.markercolor     = [1 1 1];
-topo.elec           = elec_data;
-topo.label          = elec_data.lbl;
-topo.dimord         = 'chan_freq';
-topo.freq           = 1;
+%Getting subject layout
+scalp                   = load(fullfile('Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Structure\Controls_manual_&_auto\CU COVID 003\scalp\scalp.mat'));
+load(properties.general_params.colormap);
+Channel                 = scalp.Cdata.Channel;
+elec_data               = [];
+elec_data.pos           = zeros(length(Channel),3);
+for ii = 1:length(Channel)
+    elec_data.lbl{ii}   = Channel(ii).Name;
+    temp                = Channel(ii).Loc;
+    elec_data.pos(ii,:) = mean(temp,2);
+end
+elec_data.label         = elec_data.lbl;
+elec_data.elecpos       = elec_data.pos;
+elec_data.unit          = 'mm';
+cfg.marker              = '';
+cfg.layout              = properties.sensor_params.layout;
+cfg.channel             = 'eeg';
+cfg.markersymbol        = '.';
+cfg.colormap            = cmap_a;
+cfg.markersize          = 3;
+cfg.markercolor         = [1 1 1];
+topo.elec               = elec_data;
+topo.label              = elec_data.lbl;
+topo.dimord             = 'chan_freq';
+topo.freq               = 1;
 
 
 disp("-->> Starting process");
