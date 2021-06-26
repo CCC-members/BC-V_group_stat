@@ -139,13 +139,11 @@ end
 %% remove subject scale 
 activ3D_g1t               = log(activ3D_g1);
 activ3D_g1t               = activ3D_g1t - mean(activ3D_g1t,[1 2]);
-fig_scattergram           = plot_age_roi(activ3D_g1t,age_g1,Sc);
 activ3D_g2t               = log(activ3D_g2);
-activ3D_g3t               = log(activ3D_g3);
 activ3D_g2t               = activ3D_g2t - mean(activ3D_g2t,[1 2]);
+activ3D_g3t               = log(activ3D_g3);
 activ3D_g3t               = activ3D_g3t - mean(activ3D_g3t,[1 2]);
-
-
+fig_scattergram           = plot_age_roi(activ3D_g1t,age_g1,Sc);
 
 %% linea regression
 [activ3D_g1t,activ3D_g2t,activ3D_g3t] = linear_regression(activ3D_g1t,age_g1,activ3D_g2t,age_g2,activ3D_g3t,age_g3);
