@@ -1,24 +1,20 @@
-function fig_scattergram = plot_age(data,age,Sc)
-Scouts                = Sc.Atlas(Sc.iAtlas).Scouts;
+function fig_scattergram = plot_age_sens(data,age)
 bands                 = {'delta','theta','alpha','beta','gamma'};
-data_roi              = zeros(length(Scouts),size(data,3));
 X1                    = ones(length(age),1);
 X2                    = age;
 X                     = [X1 X2];
 fig_scattergram       = cell(length(bands),1);
 for band = 1:length(bands)
-    for roi = 1:length(Scouts)
-        data_roi(roi,:)               = squeeze(median(data(Scouts(roi).Vertices,band,:),1));
-    end
-    data_roi_median                   = median(data_roi,2);
-    [val,id_data_roi]                 = sort(data_roi_median);
-    data_roi                          = data_roi(id_data_roi,:);
+    data_sens                         = squeeze(data(:,band,:));
+    data_sens_median                  = median(data_sens,2);
+    [val,id_data_sens]                = sort(data_sens_median);
+    data_sens                         = data_sens(id_data_sens,:);
     fig = figure;
     count_roi = 1;
     for roi = 1:length(Scouts)
-        scatter(age,squeeze(data_roi(roi,:)));
+        scatter(age,squeeze(data_sens(roi,:)));
         hold on
-        Y                             = squeeze(data_roi(roi,:))';
+        Y                             = squeeze(data_sens(roi,:))';
         B(:,roi)                      = X\Y;
         Y                             = squeeze(B(1,roi))*X(:,1) + squeeze(B(2,roi))*X(:,2);
         plot(age,Y)

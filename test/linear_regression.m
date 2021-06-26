@@ -1,4 +1,4 @@
-function [data_g1_regressed,data_g2_regressed,data_g3_regressed] = linear_regression(data_g1,age_g1,data_g2,age_g2,data_g3,age_g3,Sc,cmap)
+function [data_g1_regressed,data_g2_regressed,data_g3_regressed] = linear_regression(data_g1,age_g1,data_g2,age_g2,data_g3,age_g3)
 %% linear regression of age
 bands = {'delta','theta','alpha','beta','gamma'};
 %% obtain regresion coefficients and correction of data_g1 
