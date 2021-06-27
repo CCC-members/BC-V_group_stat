@@ -17,10 +17,13 @@ disp(strcat("-->> Version:",properties.generals.version));
 disp(strcat("-->> Version date:",properties.generals.version_date));
 disp("=================================================================");
 
-root_path_g1 = 'Z:\data3_260T\share_space\jcclab-users\Ariosky\BC-V_Output\CHBM_Template';
-root_path_g2 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Controls_manual_&_auto';
-root_path_g3 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Pathol_manual_&_auto';
+root_path_g1 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Output\Norm_manual_&_auto_bin';
+root_path_g2 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Output\Controls_manual_&_auto_bin';
+root_path_g3 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Output\Pathol_manual_&_auto_bin';
 output_path  = 'Output';
+if(~isfolder(output_path))
+    mkdir(output_path);
+end
 load(properties.general_params.colormap);
 
 %Getting subject surface
@@ -53,16 +56,19 @@ for i=1:length(subjects_g1)
     subject                 = subjects_g1(i);
     load(fullfile(subject.folder,subject.name));
     subID                   = BC_V_info.subjectID;
-    if(find(ismember({good_cases.name},strcat(subID,'.mat')),1))        
+    if(find(ismember({good_cases.name},strcat(subID,'.mat')),1))
         disp(strcat("-->> Processing subject: ",subID," Iter: ", num2str(i)));
-        activ_level             = BC_V_info.activation_level;
-        age_g1(count_g1)               = info_g1.data_info(contains({info_g1.data_info.SubID},subID)).Age;
-        for j=1:length(activ_level)
-            activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
-            load(activ_file,"J");
-            activ3D_g1(:,j,count_g1) = J;
+        activ_level                    = BC_V_info.activation_level;
+        data_info = info_g1.data_info(contains({info_g1.data_info.SubID},subID));
+        if(~isempty(data_info))
+            age_g1(count_g1)               = data_info.Age;
+            for j=1:length(activ_level)
+                activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
+                load(activ_file,"J");
+                activ3D_g1(:,j,count_g1) = J;
+            end
+            count_g1 = count_g1 + 1;
         end
-        count_g1 = count_g1 + 1;
     end
 end
 activ3D_g1(:,:,count_g1:end) = [];
@@ -137,7 +143,7 @@ end
 %%
 %% Group comparison
 %%
-%% remove subject scale 
+%% remove subject scale
 activ3D_g1t               = log(activ3D_g1);
 activ3D_g1t               = activ3D_g1t - mean(activ3D_g1t,[1 2]);
 activ3D_g2t               = log(activ3D_g2);
@@ -182,7 +188,7 @@ f_report('Index','Linear trend of the data with age'); % a line information
 bands = {'delta','theta','alpha','beta','gamma'};
 for band = 1:length(bands)
     fig_out  = fig_scattergram{band};
-    fig_name = ['age-scattergram ',bands{band}]; 
+    fig_name = ['age-scattergram ',bands{band}];
     f_report('Snapshot', fig_out, fig_name, [] , [200,200,875,350]);
     close(fig_out);
 end
@@ -208,11 +214,11 @@ for band = 1:length(bands)
     patch('Faces',Sc.Faces,'Vertices',Sc.Vertices,'FaceVertexCData',...
         data_diff_g1g2(:,band),'FaceColor','interp','EdgeColor','none','FaceAlpha',.99);
     set(gca,'xcolor','k','ycolor','k','zcolor','k');
-%     patch('Faces',Sc.Faces,'Vertices',Sc.Vertices,'FaceVertexCData',Sc.SulciMap*0.06 + 0.06 +...
-%         data_diff_g1g2(:,band),'FaceColor','interp','EdgeColor','none','FaceAlpha',.99);
-%     set(gca,'xcolor','k','ycolor','k','zcolor','k');
-%     colormap(gca,cmap);
-    colorbar 
+    %     patch('Faces',Sc.Faces,'Vertices',Sc.Vertices,'FaceVertexCData',Sc.SulciMap*0.06 + 0.06 +...
+    %         data_diff_g1g2(:,band),'FaceColor','interp','EdgeColor','none','FaceAlpha',.99);
+    %     set(gca,'xcolor','k','ycolor','k','zcolor','k');
+    %     colormap(gca,cmap);
+    colorbar
     axis off
     figures         = {figure_diff_g1_g2,figure_diff_g1_g2,figure_diff_g1_g2,figure_diff_g1_g2};
     fig_name        = strcat(['cortex-tstat-normativeVScontrol ',bands{band}]);
@@ -229,11 +235,11 @@ for band = 1:length(bands)
     patch('Faces',Sc.Faces,'Vertices',Sc.Vertices,'FaceVertexCData',...
         data_diff_g2g3(:,band),'FaceColor','interp','EdgeColor','none','FaceAlpha',.99);
     set(gca,'xcolor','k','ycolor','k','zcolor','k');
-%     patch('Faces',Sc.Faces,'Vertices',Sc.Vertices,'FaceVertexCData',Sc.SulciMap*0.06 + 0.06 +...
-%         data_diff_g1g2(:,band),'FaceColor','interp','EdgeColor','none','FaceAlpha',.99);
-%     set(gca,'xcolor','k','ycolor','k','zcolor','k');
-%     colormap(gca,cmap);
-    colorbar 
+    %     patch('Faces',Sc.Faces,'Vertices',Sc.Vertices,'FaceVertexCData',Sc.SulciMap*0.06 + 0.06 +...
+    %         data_diff_g1g2(:,band),'FaceColor','interp','EdgeColor','none','FaceAlpha',.99);
+    %     set(gca,'xcolor','k','ycolor','k','zcolor','k');
+    %     colormap(gca,cmap);
+    colorbar
     axis off
     figures         = {figure_diff_g2_g3,figure_diff_g2_g3,figure_diff_g2_g3,figure_diff_g2_g3};
     fig_name        = strcat(['cortex-tstat-controlVScovid ',bands{band}]);
@@ -276,8 +282,8 @@ f_report('Export',output_path, report_name, FileFormat);
 % activ3D_g2t             = reshape(activ3D_g2t,size(activ3D_g2t,1)*size(activ3D_g2t,2),size(activ3D_g2t,3));
 % activ3D_g1t             = permute(activ3D_g1t,[2 1]);
 % activ3D_g2t             = permute(activ3D_g2t,[2 1]);
-% 
-% 
+%
+%
 % %% mean data1
 % figure
 % patch('Faces',Sc.Faces,'Vertices',Sc.Vertices,'FaceVertexCData',...
@@ -297,21 +303,21 @@ f_report('Export',output_path, report_name, FileFormat);
 % colormap(gca,cmap);
 % % title(['cortex-tstat ',bands{band}]);
 % %
-% 
-% 
+%
+%
 % group_difference(activ3D_g1t,activ3D_g2t,Sc);
-% 
-% 
-% 
+%
+%
+%
 % activ3D_g1t             = log(activ3D_g1t);
 % activ3D_g1t             = activ3D_g1t - mean(activ3D_g1t,[1 2]);
 % activ3D_g2t             = log(activ3D_g2t);
 % activ3D_g2t             = activ3D_g2t - mean(activ3D_g2t,[1 2]);
-% 
-% 
+%
+%
 % group_difference(activ3D_g1t_regressed,activ3D_g2t_regressed,Sc)
-% 
-% 
+%
+%
 % plot_differ_by_roi(activ3D_g1t,activ3D_g2t,Sc);
 % avrg_cortex(activ3D_g1t,Sc,'g1');
 % avrg_cortex(activ3D_g2t,Sc,'g2');
