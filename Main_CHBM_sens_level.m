@@ -48,7 +48,6 @@ topo.label              = elec_data.lbl;
 topo.dimord             = 'chan_freq';
 topo.freq               = 1;
 
-
 disp("-->> Starting process");
 disp("------------------>> Processing CHBM normative dataset <<-----------------");
 disp("----------------------------------------------------------------");
@@ -63,10 +62,10 @@ disp("----------------------------------------------------------------");
 info_g1                 = load('CHBM_info');
 subject                 = subjects_g1(1);
 load(fullfile(subject.folder,subject.name));
-sensor_level            = BC_V_info.sensor_level;
+sensor_level            = BC_V_info.generals;
 sens_file               = fullfile(subject.folder,sensor_level(1).Ref_path,sensor_level(1).Name);
-load(sens_file,"Svv");
-sens3D_g1               = zeros(size(Svv,1),length(sensor_level),length(subjects_g1));
+load(sens_file,"Svv_channel");
+sens3D_g1               = zeros(size(Svv_channel,1),size(Svv_channel,3),length(subjects_g1));
 age_g1                  = zeros(length(subjects_g1),1);
 count_g1 = 1;
 for i=1:length(subjects_g1)
@@ -74,12 +73,12 @@ for i=1:length(subjects_g1)
     load(fullfile(subject.folder,subject.name));
     subID                   = BC_V_info.subjectID;
     disp(strcat("-->> Processing subject: ",subID," Iter: ", num2str(i)));
-    sensor_level            = BC_V_info.sensor_level;   
+    sensor_level            = BC_V_info.generals;
     age_g1(i)               = info_g1.data_info(contains({info_g1.data_info.SubID},subID)).Age;
-    for j=1:length(sensor_level)
-        sens_file = fullfile(subject.folder,sensor_level(j).Ref_path,sensor_level(j).Name);
-        load(sens_file,"Svv");
-        sens3D_g1(:,j,count_g1) = abs(diag(Svv));
+    sens_file               = fullfile(subject.folder,sensor_level(1).Ref_path,sensor_level(1).Name);
+    load(sens_file,"Svv_channel");
+    for j=1:size(Svv_channel,3)
+        sens3D_g1(:,j,count_g1) = abs(diag(Svv_channel(:,:,j)));
     end
     count_g1 = count_g1 + 1;
 end
@@ -93,26 +92,25 @@ disp("-->> Finding completed files");
 subjects_g2 = dir(fullfile(root_path_g2,'**','BC_V_info.mat'));
 disp("----------------------------------------------------------------");
 info_g2                 = load('Controls_info');
-% Checking firt subject for create the tensors
 subject                 = subjects_g2(1);
 load(fullfile(subject.folder,subject.name));
-sensor_level            = BC_V_info.sensor_level;
+sensor_level            = BC_V_info.generals;
 sens_file               = fullfile(subject.folder,sensor_level(1).Ref_path,sensor_level(1).Name);
-load(sens_file,"Svv");
-sens3D_g2               = zeros(size(Svv,1),length(sensor_level),length(subjects_g2));
+load(sens_file,"Svv_channel");
+sens3D_g2               = zeros(size(Svv_channel,1),size(Svv_channel,3),length(subjects_g2));
 age_g2                  = zeros(length(subjects_g2),1);
-count_g2                = 1;
+count_g2 = 1;
 for i=1:length(subjects_g2)
     subject                 = subjects_g2(i);
     load(fullfile(subject.folder,subject.name));
     subID                   = BC_V_info.subjectID;
     disp(strcat("-->> Processing subject: ",subID," Iter: ", num2str(i)));
-    sensor_level            = BC_V_info.sensor_level;
+    sensor_level            = BC_V_info.generals;
     age_g2(i)               = info_g2.data_info(contains({info_g2.data_info.SubID},subID)).Age;
-    for j = 1:length(sensor_level)
-        sens_file = fullfile(subject.folder,sensor_level(j).Ref_path,sensor_level(j).Name);
-        load(sens_file,"Svv");
-        sens3D_g2(:,j,count_g2) = abs(diag(Svv));
+    sens_file               = fullfile(subject.folder,sensor_level(1).Ref_path,sensor_level(1).Name);
+    load(sens_file,"Svv_channel");
+    for j=1:size(Svv_channel,3)
+        sens3D_g2(:,j,count_g2) = abs(diag(Svv_channel(:,:,j)));
     end
     count_g2 = count_g2 + 1;
 end
@@ -126,43 +124,40 @@ disp("-->> Finding completed files");
 subjects_g3 = dir(fullfile(root_path_g3,'**','BC_V_info.mat'));
 disp("----------------------------------------------------------------");
 info_g3                 = load('Pathol_info');
-% Checking firt subject for create the tensors
 subject                 = subjects_g3(1);
 load(fullfile(subject.folder,subject.name));
-sensor_level            = BC_V_info.sensor_level;
+sensor_level            = BC_V_info.generals;
 sens_file               = fullfile(subject.folder,sensor_level(1).Ref_path,sensor_level(1).Name);
-load(sens_file,"Svv");
-sens3D_g3               = zeros(size(Svv,1),length(sensor_level),length(subjects_g3));
+load(sens_file,"Svv_channel");
+sens3D_g3               = zeros(size(Svv_channel,1),size(Svv_channel,3),length(subjects_g3));
 age_g3                  = zeros(length(subjects_g3),1);
-count_g3                = 1;
+count_g3 = 1;
 for i=1:length(subjects_g3)
     subject                 = subjects_g3(i);
     load(fullfile(subject.folder,subject.name));
     subID                   = BC_V_info.subjectID;
     disp(strcat("-->> Processing subject: ",subID," Iter: ", num2str(i)));
-    sensor_level            = BC_V_info.sensor_level;
+    sensor_level            = BC_V_info.generals;
     age_g3(i)               = info_g3.data_info(contains({info_g3.data_info.SubID},subID)).Age;
-    for j = 1:length(sensor_level)
-        sens_file = fullfile(subject.folder,sensor_level(j).Ref_path,sensor_level(j).Name);
-        load(sens_file,"Svv");
-        sens3D_g3(:,j,count_g3) = abs(diag(Svv));
+    sens_file               = fullfile(subject.folder,sensor_level(1).Ref_path,sensor_level(1).Name);
+    load(sens_file,"Svv_channel");
+    for j=1:size(Svv_channel,3)
+        sens3D_g3(:,j,count_g3) = abs(diag(Svv_channel(:,:,j)));
     end
     count_g3 = count_g3 + 1;
 end
-
 
 %%
 %% Group comparison
 %%
 %% remove subject scale 
 sens3D_g1t               = log(sens3D_g1);
-sens3D_g1t               = sens3D_g1t - mean(sens3D_g1t,[1 2]);
-fig_scattergram          = plot_age_sens(sens3D_g1t,age_g1);
-
 sens3D_g2t               = log(sens3D_g2);
 sens3D_g3t               = log(sens3D_g3);
+sens3D_g1t               = sens3D_g1t - mean(sens3D_g1t,[1 2]);
 sens3D_g2t               = sens3D_g2t - mean(sens3D_g2t,[1 2]);
 sens3D_g3t               = sens3D_g3t - mean(sens3D_g3t,[1 2]);
+fig_scattergram          = plot_age_sens(sens3D_g1t,age_g1);
 
 %% linea regression
 [sens3D_g1t,sens3D_g2t,sens3D_g3t] = linear_regression(sens3D_g1t,age_g1,sens3D_g2t,age_g2,sens3D_g3t,age_g3);
@@ -174,18 +169,28 @@ sens3D_g3t               = reshape(sens3D_g3t,size(sens3D_g3t,1)*size(sens3D_g3t
 sens3D_g1t               = permute(sens3D_g1t,[2 1]);
 sens3D_g2t               = permute(sens3D_g2t,[2 1]);
 sens3D_g3t               = permute(sens3D_g3t,[2 1]);
-
+%% statistical test
+min_nsample              = min([size(sens3D_g1t,1) size(sens3D_g2t,1) size(sens3D_g3t,1)]);
+sens3D_g1t(min_nsample+1:end,:) = [];
+sens3D_g2t(min_nsample+1:end,:) = [];
+sens3D_g3t(min_nsample+1:end,:) = [];
 nperm                     = 1000;
 psignif                   = 0.05;
 %% diff g1_g2
-[stats_max_abs_t,orig_max_abs_t,orig_t] = max_abs_t_2group(sens3D_g1t,sens3D_g2t,nperm,psignif);
-data_diff_g1g2               = reshape(orig_t,size(sens3D_g1,1),size(sens3D_g1,2));
-data_diff_g1g2(data_diff_g1g2 < stats_max_abs_t.th) = 0;
+[h_g1g2,p_g2g2,~,stats_g1g2] = ttest2(sens3D_g1t,sens3D_g2t,'Tail','both');
+[pID_g1g2,pN_g1g2]        = FDR(p_g1g2,psignif);
+ind_p_g1g2                = find(p_g1g2 > pN_g1g2);
+orig_t_g1g2               = stats_g1g2.tstat';
+orig_t_g1g2(ind_p_g1g2)   = 0;
+orig_t_g1g2               = reshape(orig_t_g1g2,size(sens3D_g2,1),size(sens3D_g2,2));
 
 %% diff g2_g3
-[stats_max_abs_t,orig_max_abs_t,orig_t] = max_abs_t_2group(sens3D_g2t,sens3D_g3t,nperm,psignif);
-data_diff_g2g3               = reshape(orig_t,size(sens3D_g1,1),size(sens3D_g1,2));
-data_diff_g2g3(data_diff_g2g3 < stats_max_abs_t.th) = 0;
+[h_g2g3,p_g2g3,~,stats_g2g3] = ttest2(sens3D_g2t,sens3D_g3t,'Tail','both');
+[pID_g2g3,pN_g2g3]        = FDR(p_g2g3,psignif);
+ind_p_g2g3                = find(p_g2g3 > pN_g2g3);
+orig_t_g2g3               = stats_g2g3.tstat';
+orig_t_g2g3(ind_p_g2g3)   = 0;
+orig_t_g2g3               = reshape(orig_t_g2g3,size(sens3D_g2,1),size(sens3D_g2,2));
 
 %% figures
 % Creating a report

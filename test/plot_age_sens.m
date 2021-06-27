@@ -1,15 +1,11 @@
 function fig_scattergram = plot_age_sens(data,age)
-bands                 = {'delta','theta','alpha','beta','gamma'};
-X1                    = ones(length(age),1);
-X2                    = age;
-X                     = [X1 X2];
-fig_scattergram       = cell(length(bands),1);
-for band = 1:length(bands)
-    data_sens                         = squeeze(data(:,band,:));
+X                     = [ones(length(age),1) age];
+fig_scattergram       = figure;
+for freq = 1:size(data,2)
+    data_sens                         = squeeze(data(:,freq,:));
     data_sens_median                  = median(data_sens,2);
     [val,id_data_sens]                = sort(data_sens_median);
-    data_sens                         = data_sens(id_data_sens,:);
-    fig = figure;
+    data_sens                         = data_sens(id_data_sens,:);  
     count_sens = 1;
     for sens = 1:size(data,1)
         scatter(age,squeeze(data_sens(sens,:)));
@@ -22,7 +18,7 @@ for band = 1:length(bands)
     end
     xlabel('age');
     ylabel('roi-act');
-    title(['age-scattergram ',bands{band}]);
-    fig_scattergram{band}             = fig;
+    title(['age-scattergram ',bands{freq}]);
+    fig_scattergram{freq}             = fig;
 end
 
