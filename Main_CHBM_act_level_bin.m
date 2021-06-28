@@ -98,13 +98,16 @@ for i=1:length(subjects_g2)
     subID                   = BC_V_info.subjectID;
     disp(strcat("-->> Processing subject: ",subID," Iter: ", num2str(i)));
     activ_level             = BC_V_info.activation_level;
-    age_g2(i)               = info_g2.data_info(contains({info_g2.data_info.SubID},subID)).Age;
-    for j = 1:length(activ_level)
-        activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
-        load(activ_file,"J");
-        activ3D_g2(:,j,count_g2) = J;
+    data_info = info_g2.data_info(contains({info_g2.data_info.SubID},subID));
+    if(~isempty(data_info))
+        age_g2(i)               = data_info.Age;
+        for j = 1:length(activ_level)
+            activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
+            load(activ_file,"J");
+            activ3D_g2(:,j,count_g2) = J;
+        end
+        count_g2 = count_g2 + 1;
     end
-    count_g2 = count_g2 + 1;
 end
 
 %%
@@ -131,13 +134,16 @@ for i=1:length(subjects_g3)
     subID                   = BC_V_info.subjectID;
     disp(strcat("-->> Processing subject: ",subID," Iter: ", num2str(i)));
     activ_level             = BC_V_info.activation_level;
-    age_g3(i)               = info_g3.data_info(contains({info_g3.data_info.SubID},subID)).Age;
-    for j = 1:length(activ_level)
-        activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
-        load(activ_file,"J");
-        activ3D_g3(:,j,count_g3) = J;
+    data_info = info_g3.data_info(contains({info_g3.data_info.SubID},subID));
+    if(~isempty(data_info))
+        age_g3(i)               = data_info.Age;
+        for j = 1:length(activ_level)
+            activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
+            load(activ_file,"J");
+            activ3D_g3(:,j,count_g3) = J;
+        end
+        count_g3 = count_g3 + 1;
     end
-    count_g3 = count_g3 + 1;
 end
 
 %%
