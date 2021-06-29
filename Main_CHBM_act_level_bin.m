@@ -100,7 +100,7 @@ for i=1:length(subjects_g2)
     activ_level             = BC_V_info.activation_level;
     data_info = info_g2.data_info(contains({info_g2.data_info.SubID},subID));
     if(~isempty(data_info))
-        age_g2(i)               = data_info.Age;
+        age_g2(count_g2)               = data_info.Age;
         for j = 1:length(activ_level)
             activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
             load(activ_file,"J");
@@ -109,6 +109,8 @@ for i=1:length(subjects_g2)
         count_g2 = count_g2 + 1;
     end
 end
+activ3D_g2(:,:,count_g2:end) = [];
+age_g2(count_g2:end) = [];
 
 %%
 %%  Group 3
@@ -136,7 +138,7 @@ for i=1:length(subjects_g3)
     activ_level             = BC_V_info.activation_level;
     data_info = info_g3.data_info(contains({info_g3.data_info.SubID},subID));
     if(~isempty(data_info))
-        age_g3(i)               = data_info.Age;
+        age_g3(count_g3)               = data_info.Age;
         for j = 1:length(activ_level)
             activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
             load(activ_file,"J");
@@ -145,6 +147,8 @@ for i=1:length(subjects_g3)
         count_g3 = count_g3 + 1;
     end
 end
+activ3D_g3(:,:,count_g3:end) = [];
+age_g3(count_g3:end) = [];
 
 %%
 %% Group comparison
