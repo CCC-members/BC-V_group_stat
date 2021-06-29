@@ -18,8 +18,8 @@ disp(strcat("-->> Version date:",properties.generals.version_date));
 disp("=================================================================");
 
 root_path_g1 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Output\Norm_manual_&_auto_bin';
-root_path_g2 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Output\Controls_manual_&_auto_bin';
-root_path_g3 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Output\Pathol_manual_&_auto_bin';
+root_path_g2 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Controls_auto_bin';
+root_path_g3 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Pathol_auto_bin';
 output_path  = 'D:\Data\CHBM\BC-V_group_stat';
 
 %Getting subject layout
