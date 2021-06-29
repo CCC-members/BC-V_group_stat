@@ -1,4 +1,4 @@
-function [data_g1_regressed,data_g2_regressed,data_g3_regressed] = linear_regression(data_g1,age_g1,data_g2,age_g2,data_g3,age_g3)
+function [data_g1_regressed,data_g2_regressed,data_g3_regressed] = linear_regression_sens(data_g1,age_g1,data_g2,age_g2,data_g3,age_g3)
 %% linear regression of age, obtain regresion coefficients and correction of data_g1 
 n_sens             = size(data_g1,1);
 n_freq             = size(data_g1,2);
@@ -15,7 +15,7 @@ for sens = 1:n_sens
         data_g1_regressed(sens,freq,:) = Y - squeeze(B_g1(1,sens,freq))*X(:,1) - squeeze(B_g1(2,sens,freq))*X(:,2);
     end
 end
-figure; 
+figure;
 imagesc(age_corr_g1);
 ax            = gca;
 max_val       = max(abs(age_corr_g1(:)));
@@ -66,7 +66,7 @@ for sens = 1:n_sens
     for freq = 1:n_freq
         Y                              = squeeze(data_g3(sens,freq,:));
         age_corr_g3(sens,freq)         = corr(Y,age_g3);
-        data_g3_regressed(sens,freq,:) = Y - squeeze(B_g1(1,sens,freq))*X(:,1) - squeeze(B_g1(2,sens,freq))*X(:,2);  
+        data_g3_regressed(sens,freq,:) = Y - squeeze(B_g3(1,sens,freq))*X(:,1) - squeeze(B_g1(2,sens,freq))*X(:,2);  
     end
 end
 figure; 
