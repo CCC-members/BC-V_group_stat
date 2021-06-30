@@ -60,7 +60,7 @@ for i=1:length(subjects_g1)
         activ_level                    = BC_V_info.activation_level;
         data_info = info_g1.data_info(contains({info_g1.data_info.SubID},subID));
         if(~isempty(data_info))
-            group_info(count_g)           = data_info.Age;
+            group_info(count_g)           = data_info;
             for j=1:length(activ_level)
                 activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
                 load(activ_file,"J_FSAve");
