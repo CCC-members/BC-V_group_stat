@@ -1,4 +1,4 @@
-function [data_g1_regressed,data_g2_regressed,data_g3_regressed] = linear_regression(data_g1,age_g1,data_g2,age_g2,data_g3,age_g3)
+function [data_g1_regressed,data_g2_regressed,data_g3_regressed, figures] = linear_regression(data_g1,age_g1,data_g2,age_g2,data_g3,age_g3)
 %% linear regression of age, obtain regresion coefficients and correction of data_g1 
 n_sens             = size(data_g1,1);
 n_freq             = size(data_g1,2);
@@ -6,6 +6,7 @@ B_g1               = zeros(2,n_sens,n_freq);
 age_corr_g1        = zeros(n_sens,n_freq);
 n_age_g1           = size(data_g1,3);
 X                  = [ones(n_age_g1,1) age_g1];
+figures            = cell(1,3);
 data_g1_regressed  = data_g1;
 for sens = 1:n_sens
     for freq = 1:n_freq
@@ -15,7 +16,7 @@ for sens = 1:n_sens
         data_g1_regressed(sens,freq,:) = Y - squeeze(B_g1(1,sens,freq))*X(:,1) - squeeze(B_g1(2,sens,freq))*X(:,2);
     end
 end
-figure; 
+fig1 = figure; 
 imagesc(age_corr_g1);
 ax            = gca;
 max_val       = max(abs(age_corr_g1(:)));
@@ -30,6 +31,8 @@ xlabel('frequency (Hz)')
 ylabel('sensors 10-20 system')
 title('CHBMP age-correlation');
 
+figures{1} = fig1;
+
 %% correction of data_g2 
 age_corr_g2        = zeros(n_sens,n_freq);
 n_age_g2           = size(data_g2,3);
@@ -42,7 +45,7 @@ for sens = 1:n_sens
         data_g2_regressed(sens,freq,:) = Y - squeeze(B_g1(1,sens,freq))*X(:,1) - squeeze(B_g1(2,sens,freq))*X(:,2);  
     end
 end
-figure; 
+fig2 = figure; 
 imagesc(age_corr_g2);
 ax            = gca;
 max_val       = max(abs(age_corr_g2(:)));
@@ -56,6 +59,7 @@ colorbar
 xlabel('frequency (Hz)')
 ylabel('sensors 10-20 system')
 title('Control age-correlation');
+figures{2} = fig2;
 
 %% correction of data_g3 
 age_corr_g3        = zeros(n_sens,n_freq);
@@ -69,7 +73,7 @@ for sens = 1:n_sens
         data_g3_regressed(sens,freq,:) = Y - squeeze(B_g1(1,sens,freq))*X(:,1) - squeeze(B_g1(2,sens,freq))*X(:,2);  
     end
 end
-figure; 
+fig3 = figure; 
 imagesc(age_corr_g3);
 ax            = gca;
 max_val       = max(abs(age_corr_g3(:)));
@@ -83,5 +87,5 @@ colorbar
 xlabel('frequency (Hz)')
 ylabel('sensors 10-20 system')
 title('Covid age-correlation');
-
+figures{3} = fig3;
 end

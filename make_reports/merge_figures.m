@@ -70,8 +70,8 @@ for i=1:rows
         else
             axis on;
         end
-        if(exist('colorbar','var'))
-            if(isequal(colorbars{p},'on'));axis on; else;axis off;end
+        if(exist('colorbars','var'))
+            if(isequal(colorbars{p},'on'));colorbar; end
         else
             colorbar;
         end

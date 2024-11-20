@@ -18,9 +18,9 @@ disp(strcat("-->> Version date:",properties.generals.version_date));
 disp("=================================================================");
 
 root_path_g1 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Output\Norm_manual_&_auto_bin';
-root_path_g2 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Controls_auto_bin';
-root_path_g3 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Pathol_auto_bin';
-output_path  = 'D:\Data\CHBM\BC-V_group_stat';
+root_path_g2 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Output\Controls_manual_&_auto_bin';
+root_path_g3 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Output\Pathol_manual_&_auto_bin';
+output_path  = 'Output';
 
 %Getting subject layout
 scalp                   = load(fullfile('Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected_June_All\BC-V_Structure\Controls_manual_&_auto\CU COVID 003\scalp\scalp.mat'));
@@ -169,6 +169,26 @@ end
 sens_g3(:,:,count_g3:end) = [];
 age_g3(count_g3:end) = [];
 
+% Creating a report
+report_name = 'Covid dataset_sens_analysis';
+f_report('New');
+% Add a title to the report
+f_report('Title','Sensor group analysis (Normative,Control and Pathol)');
+% Add a title to the report
+f_report('Header','Sensor differences between Normative, Control and Patol datasets');
+
+
+% Add a index to the report
+f_report('Index','Transformations applied to the data'); % a line information
+% Add multielements info to the report
+line_1 = 'collect normative data_g1(gen,band,nsubj_g1)';
+line_2 = 'collect control data_g2(gen,band,nsubj_g2)';
+line_3 = 'collect covid data_g3(gen,band,nsubj_g3)';
+line_4 = 'log transformation data <- log(data)';
+line_5 = 'remove individual subject scale data <- mean(data,[1 2])';
+line_6 = 'obtain age regression coefficients with normative data_g1';
+f_report('Info',{line_1,line_2,line_3,line_4,line_5,line_6}); % multiline information cell array
+
 %%
 %% Group comparison
 %%
@@ -181,7 +201,18 @@ sens_g2t                      = sens_g2t - mean(sens_g2t,[1 2]);
 sens_g3t                      = sens_g3t - mean(sens_g3t,[1 2]);
 
 %% age regression 
-[sens_g1t,sens_g2t,sens_g3t]  = linear_regression(sens_g1t,age_g1,sens_g2t,age_g2,sens_g3t,age_g3);
+[sens_g1t,sens_g2t,sens_g3t,figures]  = linear_regression(sens_g1t,age_g1,sens_g2t,age_g2,sens_g3t,age_g3);
+
+for i=1:length(figures)
+   fig = figure(figures{i});   
+   set(0, 'CurrentFigure', fig)
+   title_obj = get(gca,'title');
+   % Add figure info to the report
+   fig_name = title_obj.String;
+   f_report('Snapshot', fig, fig_name, [] , [200,200,875,500]);
+    close(fig);
+end
+
 
 %% organize features
 sens_g1t                      = reshape(sens_g1t,size(sens_g1t,1)*size(sens_g1t,2),size(sens_g1t,3));
@@ -192,6 +223,15 @@ sens_g2t                      = permute(sens_g2t,[2 1]);
 sens_g3t                      = permute(sens_g3t,[2 1]);
 
 %% principal component analysis
+
+f_report('Index','Principal component analysis'); % a line information
+% Add multielements info to the report
+line_1 = 'Apply (pca) to all datasets (pca([sens_g1t; sens_g2t; sens_g3t]))';
+line_2 = 'Apply (tsne) to the score tsne(score,NumDimensions,3)';
+line_3 = 'ROBUSTCOV Compute a robust multivariate covariance and mean estimate';
+line_4 = 'Mahalanobis Distance and Robust Distance';
+f_report('Info',{line_1,line_2,line_3,line_4}); % multiline information cell array
+
 [coeff,score,latent]          = pca([sens_g1t; sens_g2t; sens_g3t]);
 [mappedX]                     = tsne(score,'NumDimensions',3);%'Distance','mahalanobis',,'Distance','mahalanobis''NumPCAComponents',100'Distance','mahalanobis''NumPCAComponents',100
 [~, ~, dfmcd, OutIdx]         = robustcov(mappedX);%,'OutlierFraction',0.05,'Method','ogk'
@@ -203,12 +243,27 @@ g                             = {[1:1:size(sens_g1t,1)]' ...
     'COVID'};
 [fig_3D_robustcov, fig_2D_distance] = plotRobustcov(mappedX,dfmcd,g,OutIdx);
 
+
+% Add a info to the report
+f_report('Info','Robust Distance Vs Mahalanobis Distance'); % a line information
+
+% Add figure info to the report
+title_obj = get(gca,'title');
+fig_name = title_obj.String;
+f_report('Snapshot', fig_2D_distance, fig_name, [] , [200,200,875,500]);
+
+title_obj = get(gca,'title');
+fig_name = title_obj.String;
+f_report('Snapshot', fig_3D_robustcov, fig_name, [] , [200,200,875,500]);
+close(fig_3D_robustcov, fig_2D_distance);
+
+
 %% remove subjects
 min_nsample                   = min([size(sens_g1t,1) size(sens_g2t,1) size(sens_g3t,1)]);
 sens_g1t(min_nsample+1:end,:) = [];
 sens_g2t(min_nsample+1:end,:) = [];
 sens_g3t(min_nsample+1:end,:) = [];
-psignif                       = 0.05;
+psignif                       = 0.25;
 nperm                         = 1000;
 
 %% diff g1_g2
@@ -218,7 +273,7 @@ ind_p_g1g2                    = find(p_g1g2 > pID_g1g2);
 orig_t_g1g2                   = stats_g1g2.tstat';
 orig_t_g1g2(ind_p_g1g2)       = 0;
 orig_t_g1g2                   = reshape(orig_t_g1g2,size(sens_g1,1),size(sens_g1,2));
-figure; 
+fig4 = figure; 
 imagesc(orig_t_g1g2);
 ax            = gca;
 max_val       = max(abs(orig_t_g1g2(:)));
@@ -233,14 +288,23 @@ xlabel('frequency (Hz)')
 ylabel('sensors 10-20 system')
 title('CHBMP-Control differences');
 
+% Add a info to the report
+f_report('Info','CHBMP-Control differences'); % a line information
+
+% Add figure info to the report
+title_obj = get(gca,'title');
+fig_name = 'CHBMP-Control differences';
+f_report('Snapshot', fig4, fig_name, [] , [200,200,875,500]);
+close(fig4);
+
 %% diff g2_g3
 [h_g2g3,p_g2g3,~,stats_g2g3]  = ttest2(sens_g3t,sens_g2t,'Tail','both','Alpha',psignif);
 [pID_g2g3,pN_g2g3]            = FDR(p_g2g3,psignif);
 ind_p_g2g3                    = find(p_g2g3 > pID_g2g3);
 orig_t_g2g3                   = stats_g2g3.tstat';
-orig_t_g2g3(ind_p_g2g3)       = 0;
+% orig_t_g2g3(ind_p_g2g3)       = 0;
 orig_t_g2g3                   = reshape(orig_t_g2g3,size(sens_g2,1),size(sens_g2,2));
-figure;
+fig5 = figure;
 imagesc(orig_t_g2g3);
 ax            = gca;
 max_val       = max(abs(orig_t_g2g3(:)));
@@ -255,59 +319,15 @@ xlabel('frequency (Hz)')
 ylabel('sensors 10-20 system')
 title('Control-Covid differences');
 
+% Add a info to the report
+f_report('Info','Control-Covid differences'); % a line information
+
+% Add figure info to the report
+title_obj = get(gca,'title');
+fig_name = 'Control-Covid differences';
+f_report('Snapshot', fig5, fig_name, [] , [200,200,875,500]);
+close(fig5);
 %% figures
-% Creating a report
-report_name = 'Covid dataset_sens_analysis';
-f_report('New');
-% Add a title to the report
-f_report('Title','Group difference normativeVScontrol, controlVScovid');
-% Add a title to the report
-f_report('Header','Cortical topography');
-% Add a info to the report
-f_report('Index','Linear trend of the data with age'); % a line information
-bands = {'delta','theta','alpha','beta','gamma'};
-for band = 1:length(bands)
-    fig_out                   = fig_scattergram{band};
-    fig_name                  = ['age-scattergram ',bands{band}]; 
-    f_report('Snapshot', fig_out, fig_name, [] , [200,200,875,350]);
-    close(fig_out);
-end
-% Add topic to the report
-f_report('Index','Student T-test of the groups');
-% Add a info to the report
-f_report('Info','Transformations applied to the data'); % a line information
-% Add multielements info to the report
-line_1 = 'collect normative data_g1(gen,band,nsubj_g1)';
-line_2 = 'collect control data_g2(gen,band,nsubj_g2)';
-line_3 = 'collect covid data_g3(gen,band,nsubj_g3)';
-line_4 = 'log transformation data <- log(data)';
-line_5 = 'remove individual subject scale data <- mean(data,[1 2])';
-line_6 = 'obtain age regression coefficients with normative data_g1';
-line_7 = 'remove age effect in data_g1, data_g2, data_g3 with regression coeffcients';
-line_8 = 'obtain Tstudent(data_g1,data_g2) between normative and control data';
-line_9 = 'obtain Tstudent(data_g2,data_g3) between control and covid data';
-f_report('Info',{line_1,line_2,line_3,line_4,line_5,line_6,line_7,line_8,line_9}); % multiline information cell array
-%%
-%% EEG topography
-for band = 1:length(bands)
-    % diff g1_g2
-    topo.powspctrm      = data_diff_g1g2(:,band);
-    figure_diff_g1_g2   = figure;
-    ft_topoplotTFR(cfg,topo);
-    fig_name            = strcat(['sensor-tstat-normativeVScontrol' ' ' band.name ' ' 'topography']);
-    title(fig_name)
-    f_report('Snapshot', figure_diff_g1_g2, fig_name, [] , [200,200,875,350]);
-    close(figure_diff_g1_g2);
-    
-    % diff g2_g3
-    topo.powspctrm      = data_diff_g2g3(:,band);
-    figure_diff_g2_g3   = figure;
-    ft_topoplotTFR(cfg,topo);
-    fig_name            = strcat(['sensor-tstat-normativeVScontrol' ' ' band.name ' ' 'topography']);
-    title(fig_name)
-    f_report('Snapshot', figure_diff_g2_g3, fig_name, [] , [200,200,875,350]);
-    close(figure_diff_g2_g3);
-end
 
 % Add the footer info to the report
 footer_title = 'Organization';
@@ -324,82 +344,3 @@ disp('-->> Exporting report.');
 FileFormat = 'html';
 f_report('Export',output_path, report_name, FileFormat);
 
-%%
-% [activ3D_g1t,~]         = get_roi_data(activ3D_g1,Sc);
-% [activ3D_g2t,~]         = get_roi_data(activ3D_g2,Sc);
-% activ3D_g1t             = log(activ3D_g1t);
-% activ3D_g1t             = activ3D_g1t - mean(activ3D_g1t,[1 2]);
-% activ3D_g2t             = log(activ3D_g2t);
-% activ3D_g2t             = activ3D_g2t - mean(activ3D_g2t,[1 2]);
-% nperm                   = 1000;
-% psignif                 = 0.05;
-% activ3D_g1t             = reshape(activ3D_g1t,size(activ3D_g1t,1)*size(activ3D_g1t,2),size(activ3D_g1t,3));
-% activ3D_g2t             = reshape(activ3D_g2t,size(activ3D_g2t,1)*size(activ3D_g2t,2),size(activ3D_g2t,3));
-% activ3D_g1t             = permute(activ3D_g1t,[2 1]);
-% activ3D_g2t             = permute(activ3D_g2t,[2 1]);
-% 
-% 
-% %% mean data1
-% figure
-% patch('Faces',Sc.Faces,'Vertices',Sc.Vertices,'FaceVertexCData',...
-%     squeeze(mean(activ3D_g1(:,1,:),3)),'FaceColor','interp','EdgeColor','none','FaceAlpha',.99);
-% set(gca,'xcolor','k','ycolor','k','zcolor','k');
-% az = 90; el = 270;
-% view(az,el);
-% colormap(gca,cmap);
-% % title(['cortex-tstat ',bands{band}]);
-% %% mean data2
-% figure
-% patch('Faces',Sc.Faces,'Vertices',Sc.Vertices,'FaceVertexCData',...
-%     squeeze(mean(activ3D_g2(:,1,:),3)),'FaceColor','interp','EdgeColor','none','FaceAlpha',.99);
-% set(gca,'xcolor','k','ycolor','k','zcolor','k');
-% az = 90; el = 270;
-% view(az,el);
-% colormap(gca,cmap);
-% % title(['cortex-tstat ',bands{band}]);
-% %
-% 
-% 
-% group_difference(activ3D_g1t,activ3D_g2t,Sc);
-% 
-% 
-% 
-% activ3D_g1t             = log(activ3D_g1t);
-% activ3D_g1t             = activ3D_g1t - mean(activ3D_g1t,[1 2]);
-% activ3D_g2t             = log(activ3D_g2t);
-% activ3D_g2t             = activ3D_g2t - mean(activ3D_g2t,[1 2]);
-% 
-% 
-% group_difference(activ3D_g1t_regressed,activ3D_g2t_regressed,Sc)
-% 
-% 
-% plot_differ_by_roi(activ3D_g1t,activ3D_g2t,Sc);
-% avrg_cortex(activ3D_g1t,Sc,'g1');
-% avrg_cortex(activ3D_g2t,Sc,'g2');
-% sens_g1t_sub           = cov(reshape(sens_g1t,size(sens_g1t,1)*size(sens_g1t,2),size(sens_g1t,3))');
-% [U,D]                  = svd(sens_g1t_sub);
-% d                      = diag(D);
-% sens_g1t_emb           = tsne(reshape(sens_g1t,size(sens_g1t,1)*size(sens_g1t,2),size(sens_g1t,3))','Algorithm','exact','NumDimensions',3);
-% sens_g2t_emb           = tsne(reshape(sens_g2t,size(sens_g2t,1)*size(sens_g2t,2),size(sens_g2t,3))','Algorithm','exact','NumDimensions',3);
-% sens_g3t_emb           = tsne(reshape(sens_g3t,size(sens_g3t,1)*size(sens_g3t,2),size(sens_g3t,3))','Algorithm','exact','NumDimensions',3);
-% fig_2D_embedding1      = figure;
-% subplot(1,3,1)
-% scatter3(sens_g1t_emb(:,1),sens_g1t_emb(:,2),sens_g1t_emb(:,3),'MarkerEdgeColor','g','MarkerFaceColor','g');
-% title('CHBMP 2D-embedding');
-% subplot(1,3,2)
-% scatter3(sens_g2t_emb(:,1),sens_g2t_emb(:,2),sens_g2t_emb(:,2),'MarkerEdgeColor','b','MarkerFaceColor','b');
-% hold on
-% scatter(sens_g2t_emb([31 71],1),sens_g2t_emb([31 71],2),'filled','MarkerEdgeColor','c','MarkerFaceColor','c');
-% title('Control 2D-embedding');
-% sens_g2t(:,:,[31 71])   = [];
-% subplot(1,3,3)
-% sscatter(sens_g3t_emb(:,1),sens_g3t_emb(:,2),'MarkerEdgeColor','r','MarkerFaceColor','r');
-% title('Covid 2D-embedding');
-% 
-% fig_2D_embedding2      = figure;
-% title('2D-embedding')
-% scatter(sens_g1t_emb(:,1),sens_g1t_emb(:,2),'filled','MarkerEdgeColor','r','MarkerFaceColor','r');
-% hold on
-% scatter(sens_g2t_emb(:,1),sens_g2t_emb(:,2),'filled','MarkerEdgeColor','r','MarkerFaceColor','r');
-% hold on
-% scatter(sens_g2t_emb(:,1),sens_g2t_emb(:,2),'filled','MarkerEdgeColor','r','MarkerFaceColor','r');

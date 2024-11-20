@@ -17,6 +17,7 @@ disp(strcat("-->> Version:",properties.generals.version));
 disp(strcat("-->> Version date:",properties.generals.version_date));
 disp("=================================================================");
 
+root_path_g0 = 'Z:\data3_260T\data\CCLAB_DATASETS\CHBM\CHBM_ARIOSKY\june-2021\BC-V_Output_sSSBL';
 root_path_g1 = 'Z:\data3_260T\share_space\jcclab-users\Ariosky\BC-V_Output\CHBM_Template';
 root_path_g2 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Controls_manual_&_auto';
 root_path_g3 = 'Z:\data3_260T\data\CCLAB_DATASETS\Covid\Corrected\BC-V_Output\Pathol_manual_&_auto';
@@ -31,6 +32,40 @@ disp("-->> Starting process");
 disp("------------------>> Processing CHBM normative dataset <<-----------------");
 disp("----------------------------------------------------------------");
 disp("-->> Finding completed files");
+
+%%
+%% Group 0 - CHBM Individual group
+%%
+subjects_g0 = dir(fullfile(root_path_g0,'**','BC_V_info.mat'));
+disp("----------------------------------------------------------------");
+info_g0                 = load('CHBM_info');
+subject                 = subjects_g0(1);
+load(fullfile(subject.folder,subject.name));
+activ_level             = BC_V_info.activation_level;
+activ_file              = fullfile(subject.folder,activ_level(1).Ref_path,activ_level(1).Name);
+load(activ_file,"J");
+activ3D_g0              = zeros(size(J,1),length(activ_level),length(subjects_g0));
+age_g0                  = zeros(length(subjects_g0),1);
+count_g0 = 1;
+for i=1:length(subjects_g0)
+    subject                 = subjects_g0(i);
+    load(fullfile(subject.folder,subject.name));
+    subID                   = BC_V_info.subjectID;
+%     if(find(ismember({good_cases.name},strcat(subID,'.mat')),1))        
+        disp(strcat("-->> Processing subject: ",subID," Iter: ", num2str(i)));
+        activ_level             = BC_V_info.activation_level;
+        age_g0(count_g0)               = info_g0.data_info(contains({info_g0.data_info.SubID},subID)).Age;
+        for j=1:length(activ_level)
+            activ_file = fullfile(subject.folder,activ_level(j).Ref_path,activ_level(j).Name);
+            load(activ_file,"J");
+            activ3D_g0(:,j,count_g0) = J;
+        end
+        count_g0 = count_g0 + 1;
+%     end
+end
+activ3D_g0(:,:,count_g0:end) = [];
+age_g0(count_g1:end) = [];
+
 
 %%
 %%  Group 1

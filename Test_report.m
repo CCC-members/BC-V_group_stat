@@ -2,6 +2,13 @@
 
 disp('-->> Starting test report.');
 
+addpath('make_report');
+% Loading color map if it is needed
+load('mycolormap.mat');
+
+output_path = pwd;
+report_name = 'Example_report';
+
 % % remove the hitory of reports
 % f_report('Clean');
 
@@ -11,7 +18,7 @@ f_report('New');
 % Add a title to the report
 f_report('Header','Surface plot','MathWorks Help Center');
 % Add a title to the report
-f_report('Title','Surface plot');
+f_report('Title','Example report');
 % Add a topic to the report
 f_report('Index','Syntax');
 % Add a info to the report
@@ -26,11 +33,11 @@ f_report('Info','Some information');
 
 % Add a figure to the report
 fig = figure;
-[X,Y,Z] = peaks(25);
-CO(:,:,1) = zeros(25); % red
-CO(:,:,2) = ones(25).*linspace(0.5,0.6,25); % green
-CO(:,:,3) = ones(25).*linspace(0,1,25); % blue
-surf(X,Y,Z,CO);
+[X,Y,Z] = peaks(30);
+surfc(X,Y,Z);
+colormap hsv;
+axis([-3 3 -3 3 -10 5]);
+title('Surf fig');
 description = strcat("surf(X,Y,Z) creates a three-dimensional surface plot, which is a three-dimensional surface that has solid edge colors and solid face colors.",...
                     "The function plots the values in matrix Z as heights above a grid in the x-y plane defined by X and Y.",...
                     "The color of the surface varies according to the heights specified by Z.");                   
@@ -44,8 +51,40 @@ description = strcat("Specify the colors for a surface plot by including a fourt
     " When you use truecolor, if Z is m-by-n, then CO is m-by-n-by-3.",...
     " The first page of the array indicates the red component for each color,",...
     " the second page indicates the green component, and the third page indicates the blue component.");
-title = "Color specifications";
-f_report('Block', title,description);
+title_b = "Color specifications";
+f_report('Block', title_b,description);
+
+
+% Add a topic to the report
+f_report('Index','Merger figures');
+% Figure 1
+x = linspace(0,3*pi,200);
+y = cos(x) + rand(1,200);  
+fig_1 = figure('Color','w','Name',"Fig 1",'NumberTitle','off');
+scatter(x,y)
+title('Figure 1');
+
+% Figure 2
+x = linspace(0,3*pi,200);
+y = cos(x) + rand(1,200);
+sz = 25;
+c = linspace(1,10,length(x));
+fig_2 = figure('Color','w','Name',"Fig 2",'NumberTitle','off');
+scatter(x,y,sz,c,'filled');
+title('Figure 2');
+
+% Merging figures
+figures = {fig_1,fig_2};
+fig_name        = strcat("Merging figures");
+fig_title       = 'Merging figures';
+fig_out         = merge_figures(fig_name, fig_title, figures, 'cmap', cmap, 'width', 875, 'height', 250,...
+    'rows', 1, 'cols', 2, 'axis_on', {'on','off'}, 'colorbars', {'off','on'}, ...
+    'view_orient',{[],[]});
+
+% Adding figure to the report
+f_report('Snapshot', fig_out, fig_name, [] , [200,200,875,250]);
+close(fig_1,fig_2,fig_out);
+
 
 % Add a table to the report
 colheads = {'Color Name', 'Short Name',	'RGB Triplet', 'Hexadecimal Color Code'};
@@ -101,18 +140,17 @@ references = {'https://www.mathworks.com/help/matlab/ref/surf.html',...
 f_report('Ref',references);
 
 % Add the footer info to the report
-title = 'Footer title';
-text = 'Footer text';
+footer_title = 'Organization';
+text = 'All rights reserved';
 copyright = '@copy CC-Lab';
 contact = 'cc-lab@neuroinformatics-collaboratory.org';
-references = {'http://reference1.domain', 'http://reference2.domain', 'http://reference3.domain', 'http://reference4.domain'};
+references = {'https://github.com/CCC-members', 'https://www.neuroinformatics-collaboratory.org/'};
 
-f_report('Footer', title, text, 'ref', references, 'copyright', copyright, 'contactus', contact);
+f_report('Footer', footer_title, text, 'ref', references, 'copyright', copyright, 'contactus', contact);
 disp('-->> Saving report.');
+
 % Export the report
-disp('-->> Starting test report.');
-output_path = pwd;
-report_name = 'A_name';
+disp('-->> Exporting report.');
 FileFormat = 'html';
 f_report('Export',output_path, report_name, FileFormat);
 
